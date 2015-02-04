@@ -2,6 +2,7 @@
 from flask import Flask, Response, request
 from ConfigParser import ConfigParser
 from subprocess import check_output
+import hmac
 import json
 app = Flask(__name__)
 
@@ -10,10 +11,20 @@ CONF = 'wrbt-httpd.conf'
 
 @app.route('/api', methods=['POST'])
 def api():
-    if open_router or request.form['auth'] == auth:
+    payload = request.form['payload']
+
+    if 'auth' in request.form:
+        token = request.form['auth'].encode('ascii')
+        signed = hmac.new(auth, payload).hexdigest()
+        authorized = hmac.compare_digest(token, signed)
+    else:
+        authorized = False
+
+    if open_router or authorized:
         if request.form['method'] == 'authorize':
             name = request.form['name']
-            response = check_output(['yrd', 'peer', 'auth', '--json', name])
+            response = check_output(['yrd', 'wrbt', 'confirm', '--', name, payload]).strip()
+            response = json.dumps({'response': response})
         else:
             response = json.dumps({'error', 'unknown method'})
     else:
