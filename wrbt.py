@@ -10,7 +10,7 @@ CONF = 'wrbt-httpd.conf'
 
 @app.route('/api', methods=['POST'])
 def api():
-    if request.form['auth'] == auth:
+    if open_router or request.form['auth'] == auth:
         if request.form['method'] == 'authorize':
             name = request.form['name']
             response = check_output(['yrd', 'peer', 'auth', '--json', name])
@@ -39,6 +39,7 @@ if __name__ == '__main__':
     config = ConfigParser()
     config.read(CONF)
     auth = config.get('wrbt', 'auth')
+    open_router = config.getboolean('wrbt', 'open')
 
     app.debug = True
     app.run()
