@@ -2,6 +2,7 @@
 from flask import Flask, Response, request, jsonify
 from ConfigParser import ConfigParser
 from subprocess import check_output
+from hashlib import sha256
 import hmac
 import json
 app = Flask(__name__)
@@ -15,7 +16,7 @@ def api():
 
     if 'auth' in request.form:
         token = request.form['auth'].encode('ascii')
-        signed = hmac.new(auth, payload).hexdigest()
+        signed = hmac.new(auth, payload, sha256).hexdigest()
         authorized = hmac.compare_digest(token, signed)
     else:
         authorized = False
