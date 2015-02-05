@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from flask import Flask, Response, request
+from flask import Flask, Response, request, jsonify
 from ConfigParser import ConfigParser
 from subprocess import check_output
 import hmac
@@ -24,14 +24,15 @@ def api():
         if request.form['method'] == 'authorize':
             name = request.form['name']
             response = check_output(['yrd', 'wrbt', 'confirm', '--', name, payload]).strip()
-            response = json.dumps({'response': response})
+            response = {'response': response}
         else:
-            response = json.dumps({'error', 'unknown method'})
+            response = {'error', 'unknown method'}
     else:
-        response = json.dumps({'error': 'rejected'})
+        response = {'error': 'rejected'}
 
-    response = Response(response, mimetype='application/json')
+    response = jsonify(response)
     response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Request-Method', 'POST')
     return response
 
 
